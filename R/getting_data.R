@@ -13,8 +13,6 @@ pre_isoquant = read_csv("data/pre_isoquant.csv")
 
 R = read_wide_report('data/2020-007 samples combined ST_user designed 20200609-111429 reprocessed with samples annotated _quantification_report.xlsx',
                      skip=1, sheet="TOP3 quantification")
-# R_matteo = read_wide_report('data/2020-007 samples combined ST_user designed 20200609-111429 reprocessed with samples annotated _quantification_report_matteo.xlsx',
-#                             sheet="TOP3 quantification")
 
 read_ss = function(path) as.data.table(read_excel(path, skip=25))
 ss = rbind(read_ss("data/Sample Submission Sheet 2020-007_1-48.xlsx"),
