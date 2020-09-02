@@ -24,6 +24,7 @@ sdesc$idx = str_sub(sdesc$replicate_name, 10, 12)
 ss$tag = str_replace(str_replace(str_sub(ss$`Sample Description`, 1, 4), '-', ''), ',','')
 ss = cbind(ss, sdesc[1:60])
 
+# Overall task: compare the intensities between these conditions.
 comparisons = list( c( "wt-cyto-no glu", "wt-cyto-glu"), 
                     c( "wt-mem-glu",     "wt-cyto-glu"),
                     c( "wt-mem-glu",     "wt-mem-no glu"),

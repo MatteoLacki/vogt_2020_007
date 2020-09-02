@@ -1,3 +1,4 @@
+# Overall task: compare the intensities between conditions.
 library(stringr)
 library(data.table)
 
@@ -12,39 +13,15 @@ Rl$repl = as.integer(str_sub(Rl$cond, -1))
 Rl = Rl[,-1]
 Rw = dcast(Rl, accession+repl~Group, value.var = 'I')
 
-TenzerTest = function(A, B, cutoff=.5,...){
+TenzerTest = function(A, B, cutoff=.5, bogus_pval=1, highly_significant_pvalue=0, ...){
   no_A = sum(is.na(A))/length(A) >= cutoff
   no_B = sum(is.na(B))/length(B) >= cutoff
   if(!no_A & !no_B) return( t.test(A,B,...)$p.value )
-  if(no_A & no_B) return(1)
-  return(0)
+  if(no_A & no_B) return(bogus_pval)
+  return(highly_significant_pvalue)
 }
 
 Rl[,.(p=c(0,.001), q=quantile(I, probs=c(0,.001), na.rm=T)), by=Group]
-
-quantile(Rl$I, probs=c(0,.001), na.rm = T)
-
-TenzerTest = function(A, B, cutoff=.5, fill_in_value=1,...){
-  A_NA_cnt = sum(is.na(A))
-  B_NA_cnt = sum(is.na(B))
-
-  no_A = A_NA_cnt/length(A) >= cutoff
-  no_B = B_NA_cnt/length(B) >= cutoff
-  
-  if(no_A){ A[is.na(A)] = fill_in_value }
-  if(no_B){ B[is.na(B)] = fill_in_value }
-  
-  if(no_A & no_B) return(NA)
-  if(A_NA_cnt > 0 & !no_A) return(NA) # some missing observations in A, but not enough to say all are 0.
-  if(B_NA_cnt > 0 & !no_B) return(NA) # some missing observations in A, but not enough to say all are 0.
-  
-  
-  return( t.test(A,B,...)$p.value )
-}
-
-X = c(NA, NA, 5, 100)
-X_small_I = 10
-X_fill_in_value = 1
 
 fill_values = function(X, X_small_I, X_fill_in_value){
   X_NA_cnt = sum(is.na(X))
@@ -54,10 +31,10 @@ fill_values = function(X, X_small_I, X_fill_in_value){
   }
   return(X)
 }
-
+ 
 TenzerTest2 = function(A, B, A_small_I, B_small_I, A_fill_in_value, B_fill_in_value, ...){
-  A = fill_values(A)
-  B = fill_values(B)
+  A = fill_values(A, A_small_I, A_fill_in_value)
+  B = fill_values(B, B_small_I, B_fill_in_value)
   
   if(any(is.na(A))) return(NA) # some NAs persist: bogus
   if(any(is.na(B))) return(NA) # some NAs persist: bogus
@@ -68,8 +45,13 @@ TenzerTest2 = function(A, B, A_small_I, B_small_I, A_fill_in_value, B_fill_in_va
   return( t.test(A,B,...)$p.value )
 }
 
-
-
+ratio2 = function(A, B, A_small_I, B_small_I, A_fill_in_value, B_fill_in_value){
+  A = fill_values(A, A_small_I, A_fill_in_value)
+  B = fill_values(B, B_small_I, B_fill_in_value)
+  med_A = median(A, na.rm=T)
+  med_B = median(B, na.rm=T)
+  med_A / med_B
+}
 
 
 
@@ -83,9 +65,6 @@ ratio = function(A, B, fill_in_value=1){
   med_A / med_B
 }
 
-ratio(c(NA,NA,NA), 1:3)
-ratio(1:3, c(NA,NA,NA))
-ratio(1:3, c(NA,1,1))
 
 get_pvals = function(comp, Rw){
   comp = c('accession',comp)
