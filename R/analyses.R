@@ -147,7 +147,14 @@ NA_stats = rbindlist(lapply(comparisons, get_NA_stats, Rw), idcol='comp')
 save(NAs, NA_stats, file='data/NA_stats.Rd')
 
 
-
 # for corporation partners:
-rw1
+summary(r1)
+any(is.na(r1$AoverB)) # no NAs
+any(r1$AoverB == Inf) # no infnities
+any(r1$AoverB == 0) # no infnities
+sum(r1$AoverB == 1) # No of phoney replacements.
+hist(log10(r1[AoverB!=1,AoverB]), breaks=100, main='A/B')
+
+rw1_final = dcast(r1, accession~comp, value.var = c('BH', 'AoverB'), sep=": ")[order(accession)]
+write.csv(rw1_final, file='data/comparison1_final.csv')
 
